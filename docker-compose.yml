@@ -1,7 +1,7 @@
 services:
   web:
     build: .
-    command: ["./wait-for-it.sh", "db:5432", "--", "uwsgi", "--ini", "config/uwsgi/uwsgi.ini"]
+    command: ["./wait-for-it.sh", "db:5432", "--", "uwsgi", "--ini", "/code/prod/uwsgi/uwsgi.ini"]
 #    restart: always
     volumes:
       - .:/code
@@ -15,16 +15,15 @@ services:
     depends_on:
       - db
       - cache
-      -
 
   nginx:
     image: nginx:1.23.1
 #    restart: always
     volumes:
-      - ./config/nginx:/etc/nginx/templates
+      - ./prod/nginx:/etc/nginx/templates
       - .:/code
     ports:
-      - "80:80"
+      - "80:80"  # http
 
   db:
     image: postgres:14.5
