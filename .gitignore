@@ -5,3 +5,5 @@ db.sqlite3
 media/
 data/
 uwsgi_app.sock
+*.sock
+*.sock.lock
