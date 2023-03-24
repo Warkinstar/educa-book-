@@ -1,25 +1,35 @@
 services:
   web:
-    build: .
+    build: .  # Search Dockerfile to build one container
+    # Стандартный python сервер
+    # command: python /code/manage.py runserver 0.0.0.0:8000
+    # Производственный сервер gunicorn
+    # command: gunicorn educa.wsgi -b 0.0.0.0:8000
+    # Ассинхронный сервер daphne
+    # command: daphne -b 0.0.0.0 -p 8000 educa.asgi:application
+    # Запустить script ожидать db запустить uwsgi сервер через файл ini
     command: ["./wait-for-it.sh", "db:5432", "--", "uwsgi", "--ini", "/code/prod/uwsgi/uwsgi.ini"]
+#    Перезапуск контейнера при выходе из строя или остановкиx по какой либо причине
 #    restart: always
-    volumes:
+    volumes:  # Том для проекта копируем в папку /code
       - .:/code
-    ports:
+    ports:  # Перебрасываем порты чтобы взаимодействовать с приложением
       - 8000:8000
-    environment:
+    environment:  # Указываем переменные среды
       - DJANGO_SETTINGS_MODULE=educa.settings.prod
       - POSTGRES_DB=postgres
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
-    depends_on:
+    depends_on:  # db и cache должны быть запущены перед web
       - db
       - cache
 
   daphne:
-    build: .
+    build: .  # Строится также из Dockerfile
+    # Ждем запуска db запускаем daphne через socket
     command: ["./wait-for-it.sh", "db:5432", "--", "daphne", "-u", "/code/daphne.sock", "educa.asgi:application"]
 #    restart: always
+    # Тот же том что и в веб, указываем его для общего использования
     volumes:
       - .:/code
     environment:
@@ -34,16 +44,19 @@ services:
   nginx:
     image: nginx:1.23.1
 #    restart: always
+    # copy config from local to docker
     volumes:
       - ./prod/nginx:/etc/nginx/templates
       - .:/code
+    # Port forwarding http and https
     ports:
       - "80:80"  # http
-      - "443:443"
+      - "443:443"  # https
 
   db:
     image: postgres:14.5
 #    restart: always
+    # copy from container data to local
     volumes:
       - ./data/db:/var/lib/postgresql/data
     environment:
@@ -53,6 +66,7 @@ services:
   cache:
     image: redis:7.0.4
 #    restart: always
+    # Copy cahce data from container to local
     volumes:
       - ./data/cache:/data
 

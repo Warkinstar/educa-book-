@@ -1,5 +1,7 @@
 # upstream for uWSGI
 
+# upstream - группа серверов, на которые можно будет передавать запросы из блока location
+
 upstream uwsgi_app {
     server unix:/code/uwsgi_app.sock;
 }
@@ -9,30 +11,42 @@ upstream daphne {
 }
 
 server{
-    listen 80;
-    server_name www.educaproject.com educaproject.com;
+    listen 80;  # Обработка порта 80 - http requests
+    server_name www.educaproject.com educaproject.com;  # Список доменов для реагирования
+    # Перенаправить запрос на https
     return 301 https://$host$request_uri;
 }
 
 server {
+    # Прослушка https-запросов с использование ssl
     listen 443 ssl;
+    # Пути к SSL сертификату и приватному ключу
     ssl_certificate /code/ssl/educa.crt;
     ssl_certificate_key /code/ssl/educa.key;
 
+    # Список доменных имен, для этой конфигурации
     server_name www.educaproject.com educaproject.com;
-    error_log stderr warn;
-    access_log /dev/stdout main;
+    # лог-файлы для ошибок и доступа к серверу
+    error_log stderr warn;  # Поток ошибок stderr формат записи warn
+    access_log /dev/stdout main;  # Поток stdout формат записи main
 
     location / {
+        # Путь (в контейнере) к параметрам передачи запросов uWSGI серверу
         include /etc/nginx/uwsgi_params;
+        # Перенаправить запрос на upstream uwsgi_app
         uwsgi_pass uwsgi_app;
     }
 
+    # Обработка websocket
     location /ws/ {
+        # Версия протокола http
         proxy_http_version 1.1;
+        # Установка значений заголовка запросов необходимых для websocket
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
+        # Ответы от proxy сервера клиенту напрямую
         proxy_redirect off;
+
         proxy_pass http://daphne;
     }
 
