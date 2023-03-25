@@ -29,3 +29,6 @@ CHANNEL_LAYERS["default"]["CONFIG"]["hosts"] = [REDIS_URL]
 CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = True
+
+# Email SMPT
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
