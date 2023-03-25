@@ -12,7 +12,7 @@ upstream daphne {
 
 server{
     listen 80;  # Обработка порта 80 - http requests
-    server_name www.educaproject.com educaproject.com;  # Список доменов для реагирования
+    server_name *.educaproject.com educaproject.com;  # Список доменов для реагирования
     # Перенаправить запрос на https
     return 301 https://$host$request_uri;
 }
@@ -25,7 +25,7 @@ server {
     ssl_certificate_key /code/ssl/educa.key;
 
     # Список доменных имен, для этой конфигурации
-    server_name www.educaproject.com educaproject.com;
+    server_name *.educaproject.com educaproject.com;
     # лог-файлы для ошибок и доступа к серверу
     error_log stderr warn;  # Поток ошибок stderr формат записи warn
     access_log /dev/stdout main;  # Поток stdout формат записи main
